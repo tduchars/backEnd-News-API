@@ -3,7 +3,7 @@ const {
   articleData,
   commentData,
   userData
-} = require('../data/index.js');
+} = require('../data/index');
 
 const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
 
@@ -17,7 +17,7 @@ exports.seed = function(knex) {
       return Promise.all([topicsInsertions, usersInsertions])
         .then(() => {
           console.log(topicsInsertions);
-          console.log(userInsertions);
+          console.log(usersInsertions);
           /* 
         
         Your article data is currently in the incorrect format and will violate your SQL schema. 
