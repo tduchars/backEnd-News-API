@@ -5,5 +5,8 @@ exports.selectUsers = () => {
 };
 
 exports.selectUsersByUsername = username => {
-  console.log(username);
+  return connection
+    .select()
+    .from('users')
+    .where('users.username', '=', username);
 };

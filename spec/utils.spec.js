@@ -5,15 +5,14 @@ const {
   formatComments
 } = require('../db/utils/utils');
 
-describe('formatDates', () => {
+describe.only('formatDates', () => {
   it('returns new array', () => {
     const input = [];
     expect(formatDates(input)).to.not.equal(input);
   });
   it('doesnt mutate old array', () => {
     const input = [];
-    formatDates(input);
-    expect(input).to.eql([]);
+    expect(formatDates(input)).to.not.equal(input);
   });
   it('doesnt mutate elements within array', () => {
     const input = [
@@ -26,7 +25,13 @@ describe('formatDates', () => {
       }
     ];
     formatDates(input);
-    expect(input[0]).to.eql(input[0]);
+    expect(input[0]).to.eql({
+      title: 'The vegan carnivore?',
+      topic: 'cooking',
+      author: 'tickle122',
+      body: 'The chef Richard McGeown...',
+      created_at: new Date(1492163783248)
+    });
   });
   it('changes array of single obj element to correct date format', () => {
     const input = [

@@ -30,6 +30,17 @@ function changedKey(arr, oldKeyName, newKeyName, oldKeyName2, newKeyName2) {
   });
 }
 
+// function changedSingleKey(arr, oldKeyName, newKeyName) {
+//   return arr.map(obj => {
+//     newObj = {};
+//     for (let key in obj) {
+//       if (key === oldKeyName) newObj[newKeyName] = obj[key];
+//       else newObj[key] = obj[key];
+//     }
+//     return newObj;
+//   });
+// }
+
 function formatDatesComments(list) {
   if (list.length === 0) return [];
   const dateFormatted = list.map(article => {
