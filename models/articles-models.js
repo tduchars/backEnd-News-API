@@ -1,12 +1,24 @@
 const connection = require('../db/connection');
 
-exports.selectArticles = (sort_by = 'created_at', order = 'desc') => {
+//add queries then go to 405 method not allowed in routers...
+exports.selectArticles = (
+  sort_by = 'created_at',
+  order = 'desc',
+  username,
+  topic
+) => {
   return connection
     .select()
     .from('articles')
     .modify(query => {
       if (sort_by) query.orderBy(sort_by, order);
       else if (order) query.orderBy(order);
+    })
+    .modify(query => {
+      if (username) query.where('articles.author', '=', username);
+    })
+    .modify(query => {
+      if (topic) query.where('articles.topic', '=', topic);
     });
 };
 
@@ -38,10 +50,17 @@ exports.insertArticleComment = (comment, article_id) => {
     .returning('*');
 };
 
-//add queries then go to 405 method not allowed in routers...
-exports.selectArticleComments = article_id => {
+exports.selectArticleComments = (
+  article_id,
+  sort_by = 'created_at',
+  order = 'desc'
+) => {
   return connection
     .select()
     .from('comments')
-    .where('comments.article_id', '=', article_id);
+    .where('comments.article_id', '=', article_id)
+    .modify(query => {
+      if (sort_by) query.orderBy(sort_by, order);
+      else if (order) query.orderBy(order);
+    });
 };

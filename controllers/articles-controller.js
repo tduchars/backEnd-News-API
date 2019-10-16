@@ -6,16 +6,22 @@ const {
   selectArticleComments
 } = require('../models/articles-models');
 
-//if null - default assertion in model params?
 exports.getArticles = (req, res, next) => {
   let { sort_by } = req.query;
   let { order } = req.query;
+  let { username } = req.query;
+  let { topic } = req.query;
   const validOrder = ['asc', 'desc'];
   if (!validOrder.includes(order)) {
     order = undefined;
   }
-  selectArticles(sort_by, order)
+  selectArticles(sort_by, order, username, topic)
     .then(articles => {
+      if (articles.length === 0) {
+        return Promise.reject({
+          query404: 'Could not filter by that query.'
+        });
+      }
       res.status(200).send({
         articles
       });
@@ -74,8 +80,19 @@ exports.postArticleComment = (req, res, next) => {
 
 exports.getArticleComments = (req, res, next) => {
   const { article_id } = req.params;
-  selectArticleComments(article_id)
+  let { sort_by } = req.query;
+  let { order } = req.query;
+  const validOrder = ['asc', 'desc'];
+  if (!validOrder.includes(order)) {
+    order = undefined;
+  }
+  selectArticleComments(article_id, sort_by, order)
     .then(comments => {
+      if (comments.length === 0) {
+        return Promise.reject({
+          noComments: 'Did not find a comment for that article.'
+        });
+      }
       res.status(200).send({
         comments
       });

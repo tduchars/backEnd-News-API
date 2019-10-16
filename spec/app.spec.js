@@ -6,7 +6,7 @@ chai.use(require('sams-chai-sorted'));
 const request = require('supertest');
 const connection = require('../db/connection');
 
-//add methods not allowed on routers when queries and all other methods completed
+//add methods not allowed on routers when empty comments array distinguished
 
 describe('/api', () => {
   after(() => {
@@ -140,12 +140,41 @@ describe('/api', () => {
             expect(articles).to.be.sortedBy('author', { descending: true });
           });
       });
-      it('passing order e.g. asc or desc. On previous two tests defaulted to descending.', () => {
+      it('allows order query --> passed query as asc --> defaults to order as descending', () => {
         return request(app)
           .get('/api/articles?order=asc')
           .expect(200)
           .then(({ body: { articles } }) => {
             expect(articles).to.be.sortedBy('created_at', { ascending: true });
+          });
+      });
+      //distinguish between no articles and not a username?
+      it('allows a filter query that filters the articles by username', () => {
+        return request(app)
+          .get('/api/articles?username=butter_bridge')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.an('array');
+            expect(articles.length).to.equal(3);
+            expect(articles[0].author).to.equal('butter_bridge');
+          });
+      });
+      it('allows a filter query that filters the articles by topic', () => {
+        return request(app)
+          .get('/api/articles?topic=mitch')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.an('array');
+            expect(articles.length).to.equal(11);
+            expect(articles[0].topic && articles[4].topic).to.equal('mitch');
+          });
+      });
+      xit('returns empty array when filter query is a username that is on database but has written no articles', () => {
+        return request(app)
+          .get('/api/articles?username=brian')
+          .expect(200)
+          .then(({ body }) => {
+            expect(body).to.eql([]);
           });
       });
     });
@@ -157,6 +186,26 @@ describe('/api', () => {
           .expect(400)
           .then(({ body }) => {
             expect(body).to.eql({ msg: 'Bad Request' });
+          });
+      });
+      it('status of 404 when filter query is a non-existent username e.g. brian is not a username', () => {
+        return request(app)
+          .get('/api/articles?username=brian')
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({
+              query404: 'Could not filter by that query.'
+            });
+          });
+      });
+      it('status of 404 when topic query is a non-existent topic e.g. brian is not a topic', () => {
+        return request(app)
+          .get('/api/articles?topic=brian')
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({
+              query404: 'Could not filter by that query.'
+            });
           });
       });
     });
@@ -289,18 +338,26 @@ describe('/api', () => {
           });
       });
     });
-    describe.only('/api/articles/:article_id/comments GET RESOLVED', () => {
+    describe('/api/articles/:article_id/comments GET RESOLVED', () => {
       it('status of 200', () => {
         return request(app)
           .get('/api/articles/1/comments')
           .expect(200);
       });
-      it('returned value should be an array', () => {
+      it('returned value should be an array and have correct keys on object', () => {
         return request(app)
           .get('/api/articles/1/comments')
           .expect(200)
           .then(({ body: { comments } }) => {
             expect(comments).to.be.an('array');
+            expect(comments[0]).to.contain.keys(
+              'comment_id',
+              'author',
+              'article_id',
+              'votes',
+              'body',
+              'created_at'
+            );
           });
       });
       it('returns all comments in array -> article_id of 1 has all the comments on test data', () => {
@@ -311,9 +368,84 @@ describe('/api', () => {
             expect(comments.length).to.equal(13);
           });
       });
+      it('returns elements in array in ascending sorted order', () => {
+        return request(app)
+          .get('/api/articles/1/comments?order=asc')
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.be.sortedBy('created_at', { ascending: true });
+          });
+      });
+      it('returns default behaviour of sort_by created_at column and in descending order.', () => {
+        return request(app)
+          .get('/api/articles/1/comments')
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.be.sortedBy('created_at', { descending: true });
+          });
+      });
+      it('another test for different column sort_by and order descending', () => {
+        return request(app)
+          .get('/api/articles/1/comments?sort_by=votes')
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.be.sortedBy('votes', { descending: true });
+          });
+      });
     });
     describe('/api/articles/:article_id/comments GET REJECTED', () => {
-      it('', () => {});
+      it('status of 404 when passed article_id that doesnt exist', () => {
+        return request(app)
+          .get('/api/articles/999/comments')
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({
+              noComments: 'Did not find a comment for that article.'
+            });
+          });
+      });
+    });
+    describe('/api/comments/:comment_id PATCH RESOLVED', () => {
+      it('status of 200 for patch request by comment_id sent --> comment_id = 3', () => {
+        return request(app)
+          .patch('/api/comments/3')
+          .send({ inc_votes: 1 })
+          .expect(200);
+      });
+      it('status of 200 for patch request with comment_id sent --> comment_id = 2', () => {
+        return request(app)
+          .patch('/api/comments/2')
+          .send({ inc_votes: 6 })
+          .expect(200)
+          .then(({ body: { newVote } }) => {
+            expect(newVote.votes).to.equal(20);
+            expect(newVote).to.be.an('object');
+          });
+      });
+    });
+    describe('/api/comments/:comment_id PATCH REJECTED', () => {
+      it('status of 422 for passing incorrecttly spelled object key for patch request', () => {
+        return request(app)
+          .patch('/api/comments/1')
+          .send({ inc_vot: 100 })
+          .expect(422)
+          .then(({ body }) => {
+            expect(body).to.eql({
+              badPatch: '422 - passed element that did not conform'
+            });
+          });
+      });
+      it('status of 422 for passing object value for patch request to increase votes by not a number', () => {
+        return request(app)
+          .patch('/api/comments/1')
+          .send({ inc_vote: 'abc' })
+          .expect(422)
+          .then(({ body }) => {
+            expect(body).to.eql({
+              badPatch: '422 - passed element that did not conform'
+            });
+          });
+      });
     });
   });
 });

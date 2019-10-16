@@ -9,13 +9,10 @@ const {
   handle500
 } = require('./errors/errors');
 
-//allows access to body object (parse json)
 app.use(express.json());
 
-//routers
 app.use('/api', apiRouter);
 
-// wildcard
 app.all('/*', (req, res, next) => {
   res.status(404).send({ wildcard: 'Page not found!' });
 });
