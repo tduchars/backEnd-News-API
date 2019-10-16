@@ -33,6 +33,7 @@
     "chai": "^4.2.0",
     "chai-sorted": "^0.2.0",
     "mocha": "^6.2.1",
+    "sams-chai-sorted": "^1.0.2",
     "supertest": "^4.0.2"
   }
 }

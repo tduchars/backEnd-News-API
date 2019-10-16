@@ -17,9 +17,15 @@ exports.getUsersByUsername = (req, res, next) => {
   const { username } = req.params;
   selectUsersByUsername(username)
     .then(([user]) => {
-      res.status(200).send({
-        user
-      });
+      if (!user) {
+        return Promise.reject({
+          username404: 'You searched for an invalid username.'
+        });
+      } else {
+        res.status(200).send({
+          user
+        });
+      }
     })
     .catch(next);
 };

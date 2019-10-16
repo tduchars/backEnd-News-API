@@ -2,9 +2,11 @@ process.env.NODE_ENV = 'test';
 const app = require('../app');
 const chai = require('chai');
 const expect = chai.expect;
-chai.use(require('chai-sorted'));
+chai.use(require('sams-chai-sorted'));
 const request = require('supertest');
 const connection = require('../db/connection');
+
+//add methods not allowed on routers when queries and all other methods completed
 
 describe('/api', () => {
   after(() => {
@@ -29,6 +31,8 @@ describe('/api', () => {
             expect(topics).to.be.an('array');
           });
       });
+    });
+    describe('/topics GET REJECTED', () => {
       it('catches any anomalous urls passed --> WILDCARD', () => {
         return request(app)
           .get('/api/banarama')
@@ -37,9 +41,6 @@ describe('/api', () => {
             expect(body.wildcard).to.equal('Page not found!');
           });
       });
-    });
-    xdescribe('/topics GET REJECTED', () => {
-      it('', () => {});
     });
   });
   describe('/api/users', () => {
@@ -75,9 +76,24 @@ describe('/api', () => {
           });
       });
     });
+    describe('api/users/:username GET REJECTED', () => {
+      it('returns 404 if passed non-existent username', () => {
+        return request(app)
+          .get('/api/users/bridgeManSam')
+          .expect(404);
+      });
+      it('returns 404 if passed non-existent username', () => {
+        return request(app)
+          .get('/api/users/bridgeDan')
+          .expect(404)
+          .then(({ text }) => {
+            expect(text).to.equal('You searched for an invalid username.');
+          });
+      });
+    });
   });
   describe('/api/articles', () => {
-    describe('/api/articles GET RESOLVED', () => {
+    describe('/api/articles GET RESOLVED (includes queries)', () => {
       it('get status 200', () => {
         return request(app)
           .get('/api/articles')
@@ -100,19 +116,61 @@ describe('/api', () => {
             );
           });
       });
+      it('allows sort_by any column and defaults query to date', () => {
+        return request(app)
+          .get('/api/articles')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sorted('created_at', { descending: true });
+          });
+      });
+      it('allows sort_by any column and sorts passed column votes', () => {
+        return request(app)
+          .get('/api/articles?sort_by=votes')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy('votes', { descending: true });
+          });
+      });
+      it('another column sort by test --> passed column as author', () => {
+        return request(app)
+          .get('/api/articles?sort_by=author')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy('author', { descending: true });
+          });
+      });
+      it('passing order e.g. asc or desc. On previous two tests defaulted to descending.', () => {
+        return request(app)
+          .get('/api/articles?order=asc')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy('created_at', { ascending: true });
+          });
+      });
     });
-    xdescribe('/api/articles/:article_id GET REJECTED', () => {
+    //needs more potential awkward errors adding especially for patch and post
+    describe('/api/articles GET REJECTED (includes rejected queries)', () => {
+      it('status of 400 when sort_by query is not a column e.g. brian is not a column', () => {
+        return request(app)
+          .get('/api/articles?sort_by=brian')
+          .expect(400)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Bad Request' });
+          });
+      });
+    });
+    describe('/api/articles/:article_id GET RESOLVED', () => {
       it('get status 200', () => {
         return request(app)
-          .get('/api/articles/10')
+          .get('/api/articles/1')
           .expect(200);
       });
-      it('get status 200', () => {
+      it('get status 200 and responds with full object including join and aggregate ', () => {
         return request(app)
-          .get('/api/articles/10')
+          .get('/api/articles/1')
           .expect(200)
           .then(({ body: { article } }) => {
-            console.log(article);
             expect(article).to.contain.keys(
               'article_id',
               'title',
@@ -123,8 +181,26 @@ describe('/api', () => {
               'created_at',
               'comment_count'
             );
+            expect(article.comment_count).to.equal('13');
             expect(article).to.be.an('object');
-            expect(article.comment_count).to.be.a('number');
+          });
+      });
+    });
+    describe('/api/articles/:article_id GET REJECTED', () => {
+      it('get status 400', () => {
+        return request(app)
+          .get('/api/articles/banana')
+          .expect(400)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Bad Request' });
+          });
+      });
+      it('get status 404', () => {
+        return request(app)
+          .get('/api/articles/9999')
+          .expect(404)
+          .then(({ text }) => {
+            expect(text).to.eql('You searched for an invalid username.');
           });
       });
     });
@@ -146,14 +222,39 @@ describe('/api', () => {
           });
       });
     });
-    xdescribe('/api/articles/:article_id PATCH REJECTED', () => {
-      it('', () => {});
+    describe('/api/articles/:article_id PATCH REJECTED', () => {
+      it('status of 400 if passed invalid article_id e.g. banana', () => {
+        return request(app)
+          .patch('/api/articles/banana')
+          .send({ inc_votes: 6 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Bad Request' });
+          });
+      });
+      it('status of 404 if passed non-existent article_id e.g. 9999', () => {
+        return request(app)
+          .patch('/api/articles/9999')
+          .send({ inc_votes: 3 })
+          .expect(404)
+          .then(({ text }) => {
+            expect(text).to.eql('You searched for an invalid username.');
+          });
+      });
+      it('status of 422 if passed valid url but tried to patch with missing data', () => {
+        return request(app)
+          .patch('/api/articles/3')
+          .send({ banana: 100 })
+          .expect(422)
+          .then(({ body }) => {
+            expect(body).to.eql({
+              badPatch: '422 - passed element that did not conform'
+            });
+          });
+      });
     });
-    //what if posted with non existing username?
-    //posted with no content on body
-    //how many layers to go?
-    describe.only('/api/articles/:article_id/comments POST RESOLVED', () => {
-      it('status of 201 - created', () => {
+    describe('/api/articles/:article_id/comments POST RESOLVED', () => {
+      it('status of 201 - created with comment on that article added', () => {
         return request(app)
           .post('/api/articles/7/comments')
           .send({ username: 'rogersop', body: 'test comment added...' })
@@ -165,6 +266,54 @@ describe('/api', () => {
             expect(comment.body).equal('test comment added...');
           });
       });
+    });
+    describe('/api/articles/:article_id/comments POST REJECTED', () => {
+      it('status of 404 when requested with non existent user id in url', () => {
+        return request(app)
+          .post('/api/articles/9999/comments')
+          .send({ username: 'rogersop', body: 'test comment added...' })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Page not Found' });
+          });
+      });
+      it('status of 400 when requested with request body that is missing element(s)', () => {
+        return request(app)
+          .post('/api/articles/3/comments')
+          .send({
+            username: 'rogersop'
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Bad Request' });
+          });
+      });
+    });
+    describe.only('/api/articles/:article_id/comments GET RESOLVED', () => {
+      it('status of 200', () => {
+        return request(app)
+          .get('/api/articles/1/comments')
+          .expect(200);
+      });
+      it('returned value should be an array', () => {
+        return request(app)
+          .get('/api/articles/1/comments')
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments).to.be.an('array');
+          });
+      });
+      it('returns all comments in array -> article_id of 1 has all the comments on test data', () => {
+        return request(app)
+          .get('/api/articles/1/comments')
+          .expect(200)
+          .then(({ body: { comments } }) => {
+            expect(comments.length).to.equal(13);
+          });
+      });
+    });
+    describe('/api/articles/:article_id/comments GET REJECTED', () => {
+      it('', () => {});
     });
   });
 });
