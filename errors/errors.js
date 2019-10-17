@@ -63,3 +63,7 @@ exports.handle500 = (err, req, res, next) => {
   console.log(err);
   res.status(500).send({ msg: 'something broke... :(' });
 };
+
+exports.handle405 = (req, res, next) => {
+  res.status(405).send({ msg: 'Method not allowed on that endpoint' });
+};

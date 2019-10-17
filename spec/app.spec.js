@@ -6,8 +6,6 @@ chai.use(require('sams-chai-sorted'));
 const request = require('supertest');
 const connection = require('../db/connection');
 
-//add methods not allowed on routers when empty comments array distinguished
-
 describe('/api', () => {
   after(() => {
     connection.destroy();
@@ -93,7 +91,6 @@ describe('/api', () => {
     });
   });
   describe('/api/articles', () => {
-    //sort and filter same time
     describe('/api/articles GET RESOLVED (includes queries)', () => {
       it('get status 200', () => {
         return request(app)
@@ -224,7 +221,6 @@ describe('/api', () => {
           });
       });
     });
-    //needs more potential awkward errors adding especially for patch and post
     describe('/api/articles GET REJECTED (includes rejected queries)', () => {
       it('status of 400 when sort_by query is not a column e.g. brian is not a column', () => {
         return request(app)
@@ -509,7 +505,6 @@ describe('/api', () => {
             });
           });
       });
-      it('', () => {});
     });
     describe('/api/comments/:comment_id DELETE RESOLVED', () => {
       it('returns 204 status with no content', () => {
@@ -529,6 +524,23 @@ describe('/api', () => {
             });
           });
       });
+    });
+  });
+  describe('Methods not allowed on endpoints', () => {
+    it('Catch all 405 errors on endpoints. Not allowed delete method on /api/articles', () => {
+      return request(app)
+        .delete('/api/articles')
+        .expect(405);
+    });
+    it('Not allowed post method on /api/comments/:comment_id', () => {
+      return request(app)
+        .post('/api/comments/:comment_id')
+        .expect(405);
+    });
+    it('Not allowed post method on /api/articles/:article_id', () => {
+      return request(app)
+        .post('/api/articles/:article_id')
+        .expect(405);
     });
   });
 });
