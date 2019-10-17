@@ -93,6 +93,7 @@ describe('/api', () => {
     });
   });
   describe('/api/articles', () => {
+    //sort and filter same time
     describe('/api/articles GET RESOLVED (includes queries)', () => {
       it('get status 200', () => {
         return request(app)
@@ -148,7 +149,6 @@ describe('/api', () => {
             expect(articles).to.be.sortedBy('created_at', { ascending: true });
           });
       });
-      //distinguish between no articles and not a username?
       it('allows a filter query that filters the articles by username', () => {
         return request(app)
           .get('/api/articles?username=butter_bridge')
@@ -169,12 +169,58 @@ describe('/api', () => {
             expect(articles[0].topic && articles[4].topic).to.equal('mitch');
           });
       });
+      //distinguish between no articles and not a username?
       xit('returns empty array when filter query is a username that is on database but has written no articles', () => {
         return request(app)
           .get('/api/articles?username=brian')
           .expect(200)
           .then(({ body }) => {
             expect(body).to.eql([]);
+          });
+      });
+      it('returns 200 when queried with multiple queries. Sort_by and order in single url request.', () => {
+        return request(app)
+          .get('/api/articles?sort_by=title&order=asc')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy('title', { ascending: true });
+          });
+      });
+      it('returns 200 when queried with multiple queries and a filter. Sort_by, order similar to last but also filter in single url request.', () => {
+        return request(app)
+          .get('/api/articles?sort_by=title&order=asc&username=butter_bridge')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy('title', { ascending: true });
+            expect(articles.length).to.equal(3);
+            expect(articles[0].author).to.equal('butter_bridge');
+            expect(articles[1].author).to.equal('butter_bridge');
+            expect(articles[2].author).to.equal('butter_bridge');
+          });
+      });
+      it('another test status 200 passing a new username filter with order ascending and sort_by set to default', () => {
+        return request(app)
+          .get('/api/articles?order=asc&username=rogersop')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy('created_at');
+            expect(articles).to.be.an('array');
+            expect(articles.length).to.equal(3);
+            expect(articles[0].author).to.equal('rogersop');
+            expect(articles[1].author).to.equal('rogersop');
+            expect(articles[2].author).to.equal('rogersop');
+          });
+      });
+      it('another test status 200 passing a new username filter with order ascending and sort_by set to default', () => {
+        return request(app)
+          .get('/api/articles?order=asc&username=rogersop&topic=cats')
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).to.be.sortedBy('created_at');
+            expect(articles).to.be.an('array');
+            expect(articles.length).to.equal(1);
+            expect(articles[0].author).to.equal('rogersop');
+            expect(articles[0].topic).to.equal('cats');
           });
       });
     });
@@ -326,16 +372,33 @@ describe('/api', () => {
             expect(body).to.eql({ msg: 'Page not Found' });
           });
       });
-      it('status of 400 when requested with request body that is missing element(s)', () => {
+      it('status of 400 when requested with object that is incomplete... missing body key value pair.', () => {
         return request(app)
-          .post('/api/articles/3/comments')
+          .post('/api/articles/9/comments')
           .send({
             username: 'rogersop'
           })
           .expect(400)
           .then(({ body }) => {
-            expect(body).to.eql({ msg: 'Bad Request' });
+            expect(body).to.eql({
+              msg: 'Bad Request'
+            });
           });
+      });
+      it('status of 400 when requested with object that is incomplete... missing username key value pair which results in author being null in object --> not allowed.', () => {
+        return request(app)
+          .post('/api/articles/9/comments')
+          .send({ body: 'test comment added...' })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body).to.eql({ incompleteRequest: 'Incomplete Request' });
+          });
+      });
+      it('status of 400 when requested with array of object and not an object.', () => {
+        return request(app)
+          .post('/api/articles/9/comments')
+          .send([{ body: 'test comment added...' }])
+          .expect(400);
       });
     });
     describe('/api/articles/:article_id/comments GET RESOLVED', () => {
@@ -435,14 +498,34 @@ describe('/api', () => {
             });
           });
       });
-      it('status of 422 for passing object value for patch request to increase votes by not a number', () => {
+      it('status of 400 for passing object value for patch request to increase votes by not a number', () => {
         return request(app)
           .patch('/api/comments/1')
-          .send({ inc_vote: 'abc' })
-          .expect(422)
+          .send({ inc_votes: 'abc' })
+          .expect(400)
           .then(({ body }) => {
             expect(body).to.eql({
-              badPatch: '422 - passed element that did not conform'
+              msg: 'Bad Request'
+            });
+          });
+      });
+      it('', () => {});
+    });
+    describe('/api/comments/:comment_id DELETE RESOLVED', () => {
+      it('returns 204 status with no content', () => {
+        return request(app)
+          .delete('/api/comments/1')
+          .expect(204);
+      });
+    });
+    describe('/api/comments/:comment_id DELETE REJECTED', () => {
+      it('returns 404 status when trying to delete comment that doesnt exist', () => {
+        return request(app)
+          .delete('/api/comments/999')
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({
+              noComment: '404 - no comment to delete'
             });
           });
       });

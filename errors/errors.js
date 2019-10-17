@@ -1,5 +1,5 @@
 exports.handlePSQL400 = (err, req, res, next) => {
-  // console.log(err);
+  //console.log(err);
   const codes = ['22P02', '23502', '42703'];
   if (codes.includes(err.code)) {
     res.status(400).send({
@@ -42,6 +42,18 @@ exports.handleCustom404 = (err, req, res, next) => {
     res.status(404).send({
       query404: 'Could not filter by that query.'
     });
+  } else if (err.noComment) {
+    res.status(404).send({
+      noComment: '404 - no comment to delete'
+    });
+  } else {
+    next(err);
+  }
+};
+
+exports.handleCustom400 = (err, req, res, next) => {
+  if (err.incompleteRequest) {
+    res.status(400).send({ incompleteRequest: 'Incomplete Request' });
   } else {
     next(err);
   }

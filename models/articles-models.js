@@ -1,6 +1,5 @@
 const connection = require('../db/connection');
 
-//add queries then go to 405 method not allowed in routers...
 exports.selectArticles = (
   sort_by = 'created_at',
   order = 'desc',

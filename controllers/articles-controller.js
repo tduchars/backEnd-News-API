@@ -71,6 +71,9 @@ exports.postArticleComment = (req, res, next) => {
   const { article_id } = req.params;
   insertArticleComment(req.body, article_id)
     .then(([comment]) => {
+      if (!comment.author) {
+        return Promise.reject({ incompleteRequest: 'Incomplete Request' });
+      }
       res.status(201).send({
         comment
       });
