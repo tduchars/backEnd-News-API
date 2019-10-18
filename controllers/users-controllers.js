@@ -14,8 +14,8 @@ exports.getUsers = (req, res, next) => {
 };
 
 exports.getUsersByUsername = (req, res, next) => {
-  const { username } = req.params;
-  selectUsersByUsername(username)
+  const { author } = req.params;
+  selectUsersByUsername(author)
     .then(([user]) => {
       if (!user) {
         return Promise.reject({

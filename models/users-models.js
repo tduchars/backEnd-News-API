@@ -4,9 +4,9 @@ exports.selectUsers = () => {
   return connection.select().from('users');
 };
 
-exports.selectUsersByUsername = username => {
+exports.selectUsersByUsername = author => {
   return connection
     .select()
     .from('users')
-    .where('users.username', '=', username);
+    .where('users.username', '=', author);
 };

@@ -10,7 +10,7 @@ usersRouter
   .get(getUsers)
   .all(handle405);
 usersRouter
-  .route('/:username')
+  .route('/:author')
   .get(getUsersByUsername)
   .all(handle405);
 

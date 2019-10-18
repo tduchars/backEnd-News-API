@@ -7,14 +7,16 @@ exports.patchCommentById = (req, res, next) => {
   const { comment_id } = req.params;
   const { inc_votes } = req.body;
   updateCommentById(comment_id, inc_votes)
-    .then(([newVote]) => {
-      if (!inc_votes) {
+    .then(([comment]) => {
+      if (typeof inc_votes === 'number' && !comment) {
         return Promise.reject({
-          badPatch: '422 - passed element that did not conform'
+          status: 404,
+          msg: 'Article Not Found'
         });
       }
+      console.log(comment);
       res.status(200).send({
-        newVote
+        comment
       });
     })
     .catch(next);

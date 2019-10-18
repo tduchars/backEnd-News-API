@@ -34,14 +34,8 @@ exports.handleCustom422s = (err, req, res, next) => {
 exports.handleCustom404 = (err, req, res, next) => {
   if (err.username404 || err.article404) {
     res.status(404).send('You searched for an invalid username.');
-  } else if (err.noComments) {
-    res.status(404).send({
-      noComments: 'Did not find a comment for that article.'
-    });
-  } else if (err.query404) {
-    res.status(404).send({
-      query404: 'Could not filter by that query.'
-    });
+  } else if (err.msg) {
+    res.status(err.status).send(err);
   } else if (err.noComment) {
     res.status(404).send({
       noComment: '404 - no comment to delete'

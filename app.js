@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const apiRouter = require('./Routes/api-router.js');
+const apiRouter = require('./routes/api-router');
 const {
   handlePSQL400,
   handlePSQL404,
