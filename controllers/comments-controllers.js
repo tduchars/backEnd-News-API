@@ -14,7 +14,6 @@ exports.patchCommentById = (req, res, next) => {
           msg: 'Article Not Found'
         });
       }
-      console.log(comment);
       res.status(200).send({
         comment
       });

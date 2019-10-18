@@ -8,43 +8,46 @@ exports.selectArticles = (
   author,
   topic
 ) => {
-  const promises = [];
+  let query = connection('articles')
+    .select('articles.*')
+    .leftJoin('comments', 'comments.article_id', 'articles.article_id')
+    .count({ comment_count: 'comments.comment_id' })
+    .groupBy('articles.article_id')
+    .modify(query => {
+      if (sort_by) query.orderBy(sort_by, order);
+      else if (order) query.orderBy(order);
+    })
+    .modify(query => {
+      if (author) query.where('articles.author', '=', author);
+    })
+    .modify(query => {
+      if (topic) query.where('articles.topic', '=', topic);
+    });
+  const promises = [query];
   if (author) {
-    let authorQuery = selectUsersByUsername(author);
+    let authorQuery = selectUsersByUsername(author).then(response => {
+      if (response.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: 'Could not filter by that author.'
+        });
+      }
+    });
     promises.push(authorQuery);
   }
   if (topic) {
-    let topicQuery = checkTopicExists(topic);
+    let topicQuery = checkTopicExists(topic).then(response => {
+      if (response.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: 'Could not filter by that topic.'
+        });
+      }
+    });
     promises.push(topicQuery);
   }
-  return Promise.all(promises).then(([response]) => {
-    if (author && response.length === 0) {
-      return Promise.reject({
-        status: 404,
-        msg: 'Could not filter by that author.'
-      });
-    }
-    if (topic && response.length === 0) {
-      return Promise.reject({
-        status: 404,
-        msg: 'Could not filter by that topic.'
-      });
-    }
-    return connection('articles')
-      .select('articles.*')
-      .leftJoin('comments', 'comments.article_id', 'articles.article_id')
-      .count({ comment_count: 'comments.comment_id' })
-      .groupBy('articles.article_id')
-      .modify(query => {
-        if (sort_by) query.orderBy(sort_by, order);
-        else if (order) query.orderBy(order);
-      })
-      .modify(query => {
-        if (author) query.where('articles.author', '=', author);
-      })
-      .modify(query => {
-        if (topic) query.where('articles.topic', '=', topic);
-      });
+  return Promise.all(promises).then(articles => {
+    return articles[0];
   });
 };
 

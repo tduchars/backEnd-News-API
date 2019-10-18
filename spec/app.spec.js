@@ -145,7 +145,9 @@ describe('/api', () => {
           .get('/api/articles?order=asc')
           .expect(200)
           .then(({ body: { articles } }) => {
-            expect(articles).to.be.sortedBy('created_at', { ascending: true });
+            expect(articles).to.be.sortedBy('created_at', {
+              ascending: true
+            });
           });
       });
       it('allows a filter query that filters the articles by author', () => {
@@ -438,7 +440,9 @@ describe('/api', () => {
           .get('/api/articles/1/comments?order=asc')
           .expect(200)
           .then(({ body: { comments } }) => {
-            expect(comments).to.be.sortedBy('created_at', { ascending: true });
+            expect(comments).to.be.sortedBy('created_at', {
+              ascending: true
+            });
           });
       });
       it('returns default behaviour of sort_by created_at column and in descending order.', () => {
@@ -446,7 +450,9 @@ describe('/api', () => {
           .get('/api/articles/1/comments')
           .expect(200)
           .then(({ body: { comments } }) => {
-            expect(comments).to.be.sortedBy('created_at', { descending: true });
+            expect(comments).to.be.sortedBy('created_at', {
+              descending: true
+            });
           });
       });
       it('another test for different column sort_by and order descending', () => {
@@ -500,10 +506,7 @@ describe('/api', () => {
         return request(app)
           .patch('/api/comments/1')
           .send({ inc_vot: 100 })
-          .expect(200)
-          .then(({ body }) => {
-            console.log(body);
-          });
+          .expect(200);
       });
     });
     describe('/api/comments/:comment_id PATCH REJECTED', () => {
@@ -522,10 +525,7 @@ describe('/api', () => {
         return request(app)
           .patch('/api/comments/1000')
           .send({ inc_votes: 5 })
-          .expect(404)
-          .then(({ body }) => {
-            console.log(body);
-          });
+          .expect(404);
       });
     });
     describe('/api/comments/:comment_id DELETE RESOLVED', () => {

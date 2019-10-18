@@ -1,5 +1,4 @@
 exports.handlePSQL400 = (err, req, res, next) => {
-  //console.log(err);
   const codes = ['22P02', '23502', '42703'];
   if (codes.includes(err.code)) {
     res.status(400).send({
@@ -54,7 +53,6 @@ exports.handleCustom400 = (err, req, res, next) => {
 };
 
 exports.handle500 = (err, req, res, next) => {
-  console.log(err);
   res.status(500).send({ msg: 'something broke... :(' });
 };
 
