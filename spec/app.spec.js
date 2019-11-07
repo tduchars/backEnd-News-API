@@ -570,4 +570,16 @@ describe('/api', () => {
         .expect(405);
     });
   });
+  describe.only('Pagination for articles', () => {
+    it('returns all articles when passed undefined p value (limit defaults to 10 per page)', () => {
+      return request(app)
+        .get('/api/articles/?page=1')
+        .expect(200);
+    });
+    xit('returns all articles when passed undefined p value (limit defaults to 10 per page)', () => {
+      return request(app)
+        .get('/api/articles/?page=1')
+        .expect(200);
+    });
+  });
 });

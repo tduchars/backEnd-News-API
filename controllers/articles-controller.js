@@ -7,12 +7,12 @@ const {
 } = require('../models/articles-models');
 
 exports.getArticles = (req, res, next) => {
-  let { sort_by, order, author, topic } = req.query;
+  let { sort_by, order, author, topic, limit, page } = req.query;
   const validOrder = ['asc', 'desc'];
   if (!validOrder.includes(order)) {
     order = undefined;
   }
-  selectArticles(sort_by, order, author, topic)
+  selectArticles(sort_by, order, author, topic, limit, page)
     .then(articles => {
       res.status(200).send({
         articles

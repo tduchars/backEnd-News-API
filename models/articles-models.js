@@ -6,7 +6,9 @@ exports.selectArticles = (
   sort_by = 'created_at',
   order = 'desc',
   author,
-  topic
+  topic,
+  limit = 10,
+  page = 1
 ) => {
   let query = connection('articles')
     .select('articles.*')

@@ -2,31 +2,36 @@ module.exports = [
   {
     username: 'tickle122',
     name: 'Tom Tickle',
-    avatar_url: 'https://www.spiritsurfers.net/monastery/wp-content/uploads/_41500270_mrtickle.jpg',
+    avatar_url:
+      'https://www.avatarys.com/var/albums/Cool-Avatars/Twitter-Avatars/Cool%20Twitter%20Avatar%20Moustache.png?m=1435520545'
   },
   {
     username: 'grumpy19',
     name: 'Paul Grump',
-    avatar_url: 'https://www.tumbit.com/profile-image/4/original/mr-grumpy.jpg',
+    avatar_url: 'https://avatarfiles.alphacoders.com/116/116090.jpg'
   },
   {
     username: 'happyamy2016',
     name: 'Amy Happy',
-    avatar_url: 'https://vignette1.wikia.nocookie.net/mrmen/images/7/7f/Mr_Happy.jpg/revision/latest?cb=20140102171729',
+    avatar_url:
+      'https://i.kym-cdn.com/photos/images/original/000/100/128/happycat.gif'
   },
   {
     username: 'cooljmessy',
     name: 'Peter Messy',
-    avatar_url: 'https://i.imgur.com/WfX0Neu.jpg',
+    avatar_url:
+      'https://www.rollingstone.com/wp-content/uploads/2018/11/jimi-hendrix-performing-in-1969.jpg?resize=900,600&w=1200'
   },
   {
     username: 'weegembump',
     name: 'Gemma Bump',
-    avatar_url: 'https://www.upandrunning.co.uk/media/catalog/product/cache/1/image/650x/040ec09b1e35df139433887a97daa66f/m/r/mr-bump.jpg',
+    avatar_url:
+      'https://www.deviantart.com/mrsmewgirl24/art/Mr-Bump-the-Cat-725542138'
   },
   {
     username: 'jessjelly',
     name: 'Jess Jelly',
-    avatar_url: 'https://s-media-cache-ak0.pinimg.com/564x/39/62/ec/3962eca164e60cf46f979c1f57d4078b.jpg',
-  },
+    avatar_url:
+      'https://cdn.dribbble.com/users/281280/screenshots/6511145/dribble.png'
+  }
 ];
