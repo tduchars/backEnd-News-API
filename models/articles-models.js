@@ -1,30 +1,31 @@
-const connection = require('../db/connection');
-const { selectUsersByUsername } = require('./users-models');
-const { checkTopicExists } = require('./topics-models');
+const connection = require("../db/connection");
+const { selectUsersByUsername } = require("./users-models");
+const { checkTopicExists } = require("./topics-models");
 
 exports.selectArticles = (
-  sort_by = 'created_at',
-  order = 'desc',
+  sort_by = "created_at",
+  order = "desc",
   author,
   topic,
-  page = 1
+  page = 1,
+  limit = 5
 ) => {
-  let query = connection('articles')
-    .select('articles.*')
-    .limit(5)
+  let query = connection("articles")
+    .select("articles.*")
+    .limit(limit)
     .offset((page - 1) * 5)
-    .leftJoin('comments', 'comments.article_id', 'articles.article_id')
-    .count({ comment_count: 'comments.comment_id' })
-    .groupBy('articles.article_id')
+    .leftJoin("comments", "comments.article_id", "articles.article_id")
+    .count({ comment_count: "comments.comment_id" })
+    .groupBy("articles.article_id")
     .modify(query => {
       if (sort_by) query.orderBy(sort_by, order);
       else if (order) query.orderBy(order);
     })
     .modify(query => {
-      if (author) query.where('articles.author', '=', author);
+      if (author) query.where("articles.author", "=", author);
     })
     .modify(query => {
-      if (topic) query.where('articles.topic', '=', topic);
+      if (topic) query.where("articles.topic", "=", topic);
     });
   const promises = [query];
   if (author) {
@@ -32,7 +33,7 @@ exports.selectArticles = (
       if (response.length === 0) {
         return Promise.reject({
           status: 404,
-          msg: 'Could not filter by that author.'
+          msg: "Could not filter by that author."
         });
       }
     });
@@ -43,7 +44,7 @@ exports.selectArticles = (
       if (response.length === 0) {
         return Promise.reject({
           status: 404,
-          msg: 'Could not filter by that topic.'
+          msg: "Could not filter by that topic."
         });
       }
     });
@@ -55,19 +56,19 @@ exports.selectArticles = (
 };
 
 exports.selectArticleById = article_id => {
-  return connection('articles')
-    .select('articles.*')
-    .leftJoin('comments', 'comments.article_id', 'articles.article_id')
-    .count({ comment_count: 'comments.comment_id' })
-    .groupBy('articles.article_id')
-    .where('articles.article_id', '=', article_id);
+  return connection("articles")
+    .select("articles.*")
+    .leftJoin("comments", "comments.article_id", "articles.article_id")
+    .count({ comment_count: "comments.comment_id" })
+    .groupBy("articles.article_id")
+    .where("articles.article_id", "=", article_id);
 };
 
 exports.updateArticleVotes = (article_id, inc_votes = 0) => {
-  return connection('articles')
-    .where('article_id', '=', article_id)
-    .increment('votes', inc_votes)
-    .returning('*');
+  return connection("articles")
+    .where("article_id", "=", article_id)
+    .increment("votes", inc_votes)
+    .returning("*");
 };
 
 exports.insertArticleComment = (comment, article_id) => {
@@ -76,16 +77,16 @@ exports.insertArticleComment = (comment, article_id) => {
     body: comment.body,
     article_id
   };
-  return connection('comments')
+  return connection("comments")
     .insert(authorFormat)
-    .where('article_id', '=', article_id)
-    .returning('*');
+    .where("article_id", "=", article_id)
+    .returning("*");
 };
 
 exports.selectArticleComments = (
   article_id,
-  sort_by = 'created_at',
-  order = 'desc'
+  sort_by = "created_at",
+  order = "desc"
 ) => {
   return exports
     .selectArticleById(article_id)
@@ -93,15 +94,15 @@ exports.selectArticleComments = (
       if (response.length === 0) {
         return Promise.reject({
           status: 404,
-          msg: 'Article Not Found'
+          msg: "Article Not Found"
         });
       }
     })
     .then(() => {
       return connection
         .select()
-        .from('comments')
-        .where('comments.article_id', '=', article_id)
+        .from("comments")
+        .where("comments.article_id", "=", article_id)
         .modify(query => {
           if (sort_by) query.orderBy(sort_by, order);
           else if (order) query.orderBy(order);

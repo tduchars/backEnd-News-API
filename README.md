@@ -27,6 +27,8 @@ To seed the database the command is...
 
 ```bash
 npm run setup-dbs
+npm run migrate-latest
+npm run seed
 ```
 
 (All scripts can of course also be found on the package.json)

@@ -4,15 +4,15 @@ const {
   updateArticleVotes,
   insertArticleComment,
   selectArticleComments
-} = require('../models/articles-models');
+} = require("../models/articles-models");
 
 exports.getArticles = (req, res, next) => {
-  let { sort_by, order, author, topic, page } = req.query;
-  const validOrder = ['asc', 'desc'];
+  let { sort_by, order, author, topic, page, limit } = req.query;
+  const validOrder = ["asc", "desc"];
   if (!validOrder.includes(order)) {
     order = undefined;
   }
-  selectArticles(sort_by, order, author, topic, page)
+  selectArticles(sort_by, order, author, topic, page, limit)
     .then(articles => {
       res.status(200).send({
         articles
@@ -27,7 +27,7 @@ exports.getArticlesById = (req, res, next) => {
     .then(([article]) => {
       if (!article) {
         return Promise.reject({
-          username404: 'You searched for an invalid username.'
+          username404: "You searched for an invalid username."
         });
       } else {
         res.status(200).send({
@@ -45,7 +45,7 @@ exports.patchArticleVotes = (req, res, next) => {
     .then(([article]) => {
       if (!article) {
         return Promise.reject({
-          username404: 'You searched for an invalid username.'
+          username404: "You searched for an invalid username."
         });
       }
       res.status(200).send({
@@ -60,7 +60,7 @@ exports.postArticleComment = (req, res, next) => {
   insertArticleComment(req.body, article_id)
     .then(([comment]) => {
       if (!comment.author) {
-        return Promise.reject({ incompleteRequest: 'Incomplete Request' });
+        return Promise.reject({ incompleteRequest: "Incomplete Request" });
       }
       res.status(201).send({
         comment
@@ -73,7 +73,7 @@ exports.getArticleComments = (req, res, next) => {
   const { article_id } = req.params;
   let { sort_by } = req.query;
   let { order } = req.query;
-  const validOrder = ['asc', 'desc'];
+  const validOrder = ["asc", "desc"];
   if (!validOrder.includes(order)) {
     order = undefined;
   }
