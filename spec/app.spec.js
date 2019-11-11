@@ -166,7 +166,7 @@ describe('/api', () => {
           .expect(200)
           .then(({ body: { articles } }) => {
             expect(articles).to.be.an('array');
-            expect(articles.length).to.equal(11);
+            expect(articles.length).to.equal(5);
             expect(articles[0].topic && articles[4].topic).to.equal('mitch');
           });
       });
@@ -570,15 +570,38 @@ describe('/api', () => {
         .expect(405);
     });
   });
-  describe.only('Pagination for articles', () => {
+  describe('Pagination for articles', () => {
     it('returns all articles when passed undefined p value (limit defaults to 10 per page)', () => {
       return request(app)
         .get('/api/articles/?page=1')
         .expect(200);
     });
-    xit('returns all articles when passed undefined p value (limit defaults to 10 per page)', () => {
+    it('returns first page of articles when passed page query of 1 (limit defaults to 5 per page)', () => {
       return request(app)
         .get('/api/articles/?page=1')
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(5);
+          expect(articles[0].article_id).to.equal(1);
+          expect(articles[4].article_id).to.equal(5);
+        });
+    });
+    it('returns all articles when passed undefined p value (limit defaults to 10 per page)', () => {
+      return request(app)
+        .get('/api/articles/?page=2')
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(5);
+          expect(articles[0].article_id).to.equal(6);
+          expect(articles[4].article_id).to.equal(10);
+        });
+    });
+  });
+  xdescribe('token based JWT authentication testing', () => {
+    it('receive users username and password', () => {
+      return request(app)
+        .post('/api/users/login/jessjelly')
+        .send({ username: 'jessjelly', password: 'jonnyPassword' })
         .expect(200);
     });
   });

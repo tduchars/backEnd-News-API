@@ -7,11 +7,12 @@ exports.selectArticles = (
   order = 'desc',
   author,
   topic,
-  limit = 10,
   page = 1
 ) => {
   let query = connection('articles')
     .select('articles.*')
+    .limit(5)
+    .offset((page - 1) * 5)
     .leftJoin('comments', 'comments.article_id', 'articles.article_id')
     .count({ comment_count: 'comments.comment_id' })
     .groupBy('articles.article_id')

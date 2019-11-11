@@ -13,5 +13,9 @@ usersRouter
   .route('/:author')
   .get(getUsersByUsername)
   .all(handle405);
+// usersRouter
+//   .route('/login/:username')
+//   .post(authenticateUser)
+//   .all(handle405);
 
 module.exports = usersRouter;

@@ -3,6 +3,8 @@ const {
   selectUsers
 } = require('../models/users-models');
 
+const jwt = require('jsonwebtoken');
+
 exports.getUsers = (req, res, next) => {
   selectUsers()
     .then(users => {
@@ -29,3 +31,9 @@ exports.getUsersByUsername = (req, res, next) => {
     })
     .catch(next);
 };
+
+// exports.authenticateUser = (req, res, next) => {
+//   const { username, password } = req.body;
+//   const token = jwt.sign({ username }, password, { expiresIn: '1h' });
+//   return token;
+// };
